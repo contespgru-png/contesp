@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta Completa de CNPJ</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #2c3e50, #4a6491);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .search-section {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .input-group {
+            display: flex;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 14px 20px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 6px 0 0 6px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            border-color: #4a6491;
+        }
+        
+        button {
+            background: #4a6491;
+            color: white;
+            border: none;
+            padding: 0 25px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 0 6px 6px 0;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #3a547e;
+        }
+        
+        .result-section {
+            display: none;
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .company-name {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .cnpj {
+            font-size: 1.2rem;
+            color: #666;
+        }
+        
+        .info-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        
+        .info-title {
+            font-size: 1.3rem;
+            color: #4a6491;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            /* Estilos para alinhar o título e o botão de informação */
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .info-item {
+            margin-bottom: 15px;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .info-value {
+            color: #333;
+            word-break: break-word;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #4a6491;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .warning-note {
+            background-color: #fffbe6;
+            color: #8a6d3b;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #ffe58f;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .json-viewer {
+            background-color: #2c3e50;
+            color: #f5f7fa;
+            padding: 20px;
+            border-radius: 6px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .toggle-view {
+            background-color: #e0e0e0;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .toggle-view:hover {
+            background-color: #d0d0d0;
+        }
+        
+        .partner-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+        }
+        
+        .partner-header {
+            font-weight: 600;
+            color: #4a6491;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .activity-item {
+            padding: 10px;
+            border-left: 3px solid #4a6491;
+            background-color: #f9f9f9;
+            margin-bottom: 10px;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .activity-code {
+            font-weight: 600;
+            color: #4a6491;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 0; /* Ajuste para não ter margem esquerda por padrão */
+        }
+        
+        .badge-active {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .badge-inactive {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .badge-warning {
+            background-color: #fffbe6;
+            color: #8a6d3b;
+        }
+
+        /* Estilos para o botão de informação e tooltip */
+        .info-tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            background-color: #a0aec0;
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 14px;
+            user-select: none;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            width: 320px;
+            background-color: #2c3e50;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 12px;
+            position: absolute;
+            z-index: 1;
+            bottom: 140%;
+            left: 50%;
+            margin-left: -160px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            font-weight: normal;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #2c3e50 transparent transparent transparent;
+        }
+
+        .info-tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .tooltip-text ul {
+            list-style-position: inside;
+            padding-left: 10px;
+        }
+        .tooltip-text ul li {
+            margin-bottom: 4px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+            }
+            
+            input[type="text"] {
+                border-radius: 6px;
+                margin-bottom: 10px;
+            }
+            
+            button {
+                border-radius: 6px;
+                padding: 14px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .result-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .company-name {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Consulta Completa de CNPJ</h1>
+            <p class="description">Consulte informações completas de empresas usando a API Pública</p>
+        </header>
+        
+        <section class="search-section">
+            <div class="input-group">
+                <input type="text" id="cnpjInput" placeholder="Digite o CNPJ (com ou sem formatação)" maxlength="18">
+                <button id="searchButton">Consultar</button>
+            </div>
+             <div class="info-tooltip" style="margin-top: 15px;">
+                <span class="info-icon">!</span>
+                <span class="tooltip-text" style="width: 400px; margin-left: -200px;">
+                    <strong>Limitações da API Pública</strong><br>
+                    A API Pública possui a limitação de atender apenas 3 requisições por minuto de um mesmo IP, entenda que essa limitação é independente ao fato de a consulta ter obtido sucesso ao encontrar o CNPJ. Após ultrapassar esse limite o requisitante terá que aguardar completar os 60 segundos para poder fazer a próxima requisição.
+                </span>
+            </div>
+        </section>
+        
+        <div class="error" id="errorMessage"></div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Consultando CNPJ, aguarde...</p>
+        </div>
+        
+        <section class="result-section" id="resultSection">
+            <button class="toggle-view" id="toggleView">Visualizar como JSON</button>
+            
+            <div id="structuredView">
+                <div class="result-header">
+                    <h2 class="company-name" id="companyName"></h2>
+                    <div class="cnpj" id="cnpjNumber"></div>
+                </div>
+                
+                <div class="info-section">
+                    <h3 class="info-title">Dados Básicos da Empresa</h3>
+                    <div class="info-grid" id="basicInfo"></div>
+                </div>
+
+                <div class="info-section">
+                    <h3 class="info-title">CNPJs da Empresa (Filiais)</h3>
+                    <div class="warning-note">
+                        <strong>Atenção:</strong> A consulta de todas as filiais de uma empresa está disponível apenas na API paga com Token.
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <h3 class="info-title">Porte e Natureza Jurídica</h3>
+                    <div class="info-grid" id="companyTypeInfo"></div>
+                </div>
+                
+                <div class="info-section">
+                    <h3 class="info-title">Estabelecimento</h3>
+                    <div class="info-grid" id="establishmentInfo"></div>
+                </div>
+                
+                <div class="info-section">
+                    <h3 class="info-title">Endereço
+                        <span class="info-tooltip">
+                            <span class="info-icon">?</span>
+                            <span class="tooltip-text">
+                                Fonte: https://www.ibge.gov.br/explica/codigos-dos-municipios.php
+                            </span>
+                        </span>
+                    </h3>
+                    <div class="info-grid" id="addressInfo"></div>
+                </div>
+                
+                <div class="info-section">
+                    <h3 class="info-title">Contato</h3>
+                    <div class="info-grid" id="contactInfo"></div>
+                </div>
+                
+                <div class="info-section">
+                    <h3 class="info-title">Atividade Principal</h3>
+                    <div id="mainActivity"></div>
+                </div>
+                
+                <div class="info-section">
+                    <h3 class="info-title">Atividades Secundárias</h3>
+                    <div id="secondaryActivities"></div>
+                </div>
+                
+                <div class="info-section">
+                    <h3 class="info-title">Sócios
+                        <span class="info-tooltip">
+                            <span class="info-icon">?</span>
+                            <span class="tooltip-text">
+                                Importante: O campo cpf_cnpj_socio e cpf_representante_legal são descaracterizados conforme a regra abaixo:
+                                <br><br>
+                                Ocultação de informações pessoais sigilosas como no caso do CPF, o qual deve ser descaracterizado por meio da ocultação dos três primeiros dígitos e dos dois dígitos verificadores, conforme orientação disposta no art. 129 § 2o da Lei no 13.473/2017 (LDO 2018).
+                            </span>
+                        </span>
+                    </h3>
+                    <div id="partnersInfo"></div>
+                </div>
+                
+                <div class="info-section">
+                    <h3 class="info-title">Simples Nacional
+                         <span class="info-tooltip">
+                            <span class="info-icon">?</span>
+                            <span class="tooltip-text">
+                                Atenção! Esse registro só é preenchido caso a empresa seja MEI, Simples ou tenha sido um dos dois em algum momento.
+                            </span>
+                        </span>
+                    </h3>
+                    <div class="info-grid" id="simplesInfo"></div>
+                </div>
+                
+                <div class="info-section">
+                    <h3 class="info-title">Inscrições Estaduais
+                        <span class="info-tooltip">
+                            <span class="info-icon">?</span>
+                            <span class="tooltip-text">
+                                Atenção! No momento só estamos retornando apenas as inscrições estaduais dos estados abaixo:
+                                <ul>
+                                    <li>Bahia</li>
+                                    <li>Espírito Santo</li>
+                                    <li>Goiás</li>
+                                    <li>Maranhão</li>
+                                    <li>Mato Grosso do Sul</li>
+                                    <li>Minas Gerais</li>
+                                    <li>Paraíba</li>
+                                    <li>Paraná</li>
+                                    <li>Rio Grande do Sul</li>
+                                    <li>São Paulo</li>
+                                    <li>Sergipe</li>
+                                </ul>
+                                Estamos trabalhando para trazer as inscrições estaduais de outros estados!
+                            </span>
+                        </span>
+                    </h3>
+                    <div id="stateRegistrationsInfo"></div>
+                </div>
+                
+                <div class="info-section">
+                    <h3 class="info-title">Inscrições Suframa</h3>
+                    <div id="suframaInfo"></div>
+                </div>
+                
+                <div class="info-section">
+                    <h3 class="info-title">Regimes Tributários
+                        <span class="info-tooltip">
+                            <span class="info-icon">?</span>
+                            <span class="tooltip-text">
+                                A partir do ano de 2021, a RFB passa a disponibilizar as informações sobre o regime tributário das pessoas jurídicas, divulgado anualmente.
+                                <br><br>
+                                Os dados são extraídos da Escrituração Contábil Fiscal (ECF). Raramente, quando, devido à ocorrência de situação especial ou existência de Sociedades em Conta de Participação (SCP), há entrega pela instituição de mais de uma escrituração no ano com formas de tributação diferentes ou domicílio em mais de uma cidade, existirá mais de um registro para o CNPJ.
+                                <br><br>
+                                Lembrando que estão dispensados da transmissão do ECF pessoas jurídicas optantes pelo Simples Nacional, órgãos públicos, autarquias e fundações públicas. Os PJs inativos também não precisam enviar o ECF, desde que não tenham realizado nenhum tipo de atividade durante todo o ano-calendário.
+                                <br><br>
+                                A Receita disponibiliza esses dados sempre no ano posterior a entrega da ECF.
+                            </span>
+                        </span>
+                    </h3>
+                    <div class="warning-note">
+                        <strong>Atenção:</strong> As informações referentes aos regimes tributários estão disponíveis apenas na API paga com Token.
+                    </div>
+                    <div id="taxRegimesInfo"></div>
+                </div>
+                
+                <div class="info-section">
+                    <h3 class="info-title">Situação Cadastral</h3>
+                    <div class="info-grid" id="cadastralStatusInfo"></div>
+                </div>
+            </div>
+            
+            <div class="json-viewer" id="jsonViewer"></div>
+        </section>
+        
+        <footer>
+            <p>Desenvolvido por Bruno Di Sandro</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cnpjInput = document.getElementById('cnpjInput');
+            const searchButton = document.getElementById('searchButton');
+            const resultSection = document.getElementById('resultSection');
+            const loadingElement = document.getElementById('loading');
+            const errorMessage = document.getElementById('errorMessage');
+            const jsonViewer = document.getElementById('jsonViewer');
+            const toggleViewButton = document.getElementById('toggleView');
+            const structuredView = document.getElementById('structuredView');
+            
+            // Formatar CNPJ enquanto digita
+            cnpjInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 14) value = value.slice(0, 14);
+                
+                if (value.length > 12) {
+                    value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+                } else if (value.length > 8) {
+                    value = value.replace(/(\d{2})(\d{3})(\d{3})/, '$1.$2.$3/');
+                } else if (value.length > 5) {
+                    value = value.replace(/(\d{2})(\d{3})/, '$1.$2.');
+                } else if (value.length > 2) {
+                    value = value.replace(/(\d{2})/, '$1.');
+                }
+                
+                e.target.value = value;
+            });
+            
+            // Consultar CNPJ ao clicar no botão
+            searchButton.addEventListener('click', consultarCNPJ);
+            
+            // Também consultar ao pressionar Enter
+            cnpjInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    consultarCNPJ();
+                }
+            });
+            
+            // Alternar entre visualização estruturada e JSON
+            toggleViewButton.addEventListener('click', function() {
+                if (structuredView.style.display === 'none') {
+                    structuredView.style.display = 'block';
+                    jsonViewer.style.display = 'none';
+                    toggleViewButton.textContent = 'Visualizar como JSON';
+                } else {
+                    structuredView.style.display = 'none';
+                    jsonViewer.style.display = 'block';
+                    toggleViewButton.textContent = 'Visualização Estruturada';
+                }
+            });
+            
+            async function consultarCNPJ() {
+                const cnpj = cnpjInput.value.replace(/\D/g, '');
+                
+                if (cnpj.length !== 14) {
+                    showError('Por favor, digite um CNPJ válido com 14 dígitos.');
+                    return;
+                }
+                
+                resultSection.style.display = 'none';
+                errorMessage.style.display = 'none';
+                loadingElement.style.display = 'block';
+                
+                try {
+                    const response = await fetch(`https://publica.cnpj.ws/cnpj/${cnpj}`);
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                         if (response.status === 429) {
+                            throw {
+                                status: 429,
+                                title: data.titulo || "Muitas requisições",
+                                details: data.detalhes || "Limite de consultas excedido. Tente novamente mais tarde."
+                            };
+                        } else if (response.status === 404) {
+                            throw new Error('CNPJ não encontrado em nossa base de dados.');
+                        } else {
+                            throw new Error(`Erro na consulta. Status: ${response.status}`);
+                        }
+                    }
+
+                    displayResults(data);
+                    resultSection.style.display = 'block';
+
+                } catch (error) {
+                    if (error.status === 429) {
+                        showError(`<strong>${error.title}</strong><br>${error.details}`);
+                    } else {
+                        showError(error.message || 'Erro ao consultar o CNPJ. Verifique o número e tente novamente.');
+                    }
+                } finally {
+                     loadingElement.style.display = 'none';
+                }
+            }
+            
+            function displayResults(data) {
+                jsonViewer.textContent = JSON.stringify(data, null, 2);
+                
+                document.getElementById('companyName').textContent = data.razao_social;
+                document.getElementById('cnpjNumber').textContent = formatCNPJ(data.estabelecimento.cnpj);
+                
+                document.getElementById('basicInfo').innerHTML = `
+                    <div class="info-item">
+                        <div class="info-label">CNPJ Raiz</div>
+                        <div class="info-value">${data.cnpj_raiz}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Razão Social</div>
+                        <div class="info-value">${data.razao_social}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Capital Social</div>
+                        <div class="info-value">R$ ${formatCurrency(data.capital_social)}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Responsável Federativo</div>
+                        <div class="info-value">${data.responsavel_federativo || 'Não informado'}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Atualizado em</div>
+                        <div class="info-value">${formatDate(data.atualizado_em)}</div>
+                    </div>
+                `;
+                
+                document.getElementById('companyTypeInfo').innerHTML = `
+                    <div class="info-item">
+                        <div class="info-label">Porte da Empresa</div>
+                        <div class="info-value">${data.porte.descricao}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Natureza Jurídica</div>
+                        <div class="info-value">${data.natureza_juridica.descricao}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Qualificação do Responsável</div>
+                        <div class="info-value">${data.qualificacao_do_responsavel.descricao}</div>
+                    </div>
+                `;
+                
+                const estab = data.estabelecimento;
+                document.getElementById('establishmentInfo').innerHTML = `
+                    <div class="info-item">
+                        <div class="info-label">CNPJ Completo</div>
+                        <div class="info-value">${formatCNPJ(estab.cnpj)}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">CNPJ Ordem</div>
+                        <div class="info-value">${estab.cnpj_ordem}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Dígito Verificador</div>
+                        <div class="info-value">${estab.cnpj_digito_verificador}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Tipo</div>
+                        <div class="info-value">${estab.tipo}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Nome Fantasia</div>
+                        <div class="info-value">${estab.nome_fantasia || 'Não informado'}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Data Início Atividade</div>
+                        <div class="info-value">${formatDate(estab.data_inicio_atividade)}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Situação Especial</div>
+                        <div class="info-value">${estab.situacao_especial || 'Não informado'}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Data Situação Especial</div>
+                        <div class="info-value">${formatDate(estab.data_situacao_especial) || 'Não informado'}</div>
+                    </div>
+                `;
+                
+                document.getElementById('addressInfo').innerHTML = `
+                    <div class="info-item">
+                        <div class="info-label">Logradouro</div>
+                        <div class="info-value">${estab.tipo_logradouro} ${estab.logradouro}, ${estab.numero}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Complemento</div>
+                        <div class="info-value">${estab.complemento || 'Não informado'}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Bairro</div>
+                        <div class="info-value">${estab.bairro}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">CEP</div>
+                        <div class="info-value">${formatCEP(estab.cep)}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Cidade</div>
+                        <div class="info-value">${estab.cidade.nome}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Estado</div>
+                        <div class="info-value">${estab.estado.nome} (${estab.estado.sigla})</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">País</div>
+                        <div class="info-value">${estab.pais.nome}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Cidade no Exterior</div>
+                        <div class="info-value">${estab.nome_cidade_exterior || 'Não informado'}</div>
+                    </div>
+                `;
+                
+                document.getElementById('contactInfo').innerHTML = `
+                    <div class="info-item">
+                        <div class="info-label">Telefone 1</div>
+                        <div class="info-value">${estab.ddd1 ? `(${estab.ddd1}) ${estab.telefone1}` : 'Não informado'}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Telefone 2</div>
+                        <div class="info-value">${estab.ddd2 ? `(${estab.ddd2}) ${estab.telefone2}` : 'Não informado'}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Fax</div>
+                        <div class="info-value">${estab.ddd_fax ? `(${estab.ddd_fax}) ${estab.fax}` : 'Não informado'}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Email</div>
+                        <div class="info-value">${estab.email || 'Não informado'}</div>
+                    </div>
+                `;
+                
+                const mainActivity = estab.atividade_principal;
+                document.getElementById('mainActivity').innerHTML = `
+                    <div class="activity-item">
+                        <div class="info-label">Código CNAE</div>
+                        <div class="info-value activity-code">${mainActivity.id}</div>
+                        <div class="info-label">Descrição</div>
+                        <div class="info-value">${mainActivity.descricao}</div>
+                        <div class="info-label">Seção</div>
+                        <div class="info-value">${mainActivity.secao}</div>
+                        <div class="info-label">Divisão</div>
+                        <div class="info-value">${mainActivity.divisao}</div>
+                        <div class="info-label">Grupo</div>
+                        <div class="info-value">${mainActivity.grupo}</div>
+                        <div class="info-label">Classe</div>
+                        <div class="info-value">${mainActivity.classe}</div>
+                        <div class="info-label">Subclasse</div>
+                        <div class="info-value">${mainActivity.subclasse}</div>
+                    </div>
+                `;
+                
+                const secondaryActivities = document.getElementById('secondaryActivities');
+                if (estab.atividades_secundarias && estab.atividades_secundarias.length > 0) {
+                    let activitiesHTML = '';
+                    estab.atividades_secundarias.forEach(activity => {
+                        activitiesHTML += `
+                            <div class="activity-item">
+                                <div class="info-label">Código CNAE</div>
+                                <div class="info-value activity-code">${activity.id}</div>
+                                <div class="info-label">Descrição</div>
+                                <div class="info-value">${activity.descricao}</div>
+                                <div class="info-label">Seção</div>
+                                <div class="info-value">${activity.secao}</div>
+                            </div>
+                        `;
+                    });
+                    secondaryActivities.innerHTML = activitiesHTML;
+                } else {
+                    secondaryActivities.innerHTML = '<p>Não há atividades secundárias registradas.</p>';
+                }
+                
+                const partnersInfo = document.getElementById('partnersInfo');
+                if (data.socios && data.socios.length > 0) {
+                    let partnersHTML = '';
+                    data.socios.forEach((partner, index) => {
+                        partnersHTML += `
+                            <div class="partner-card">
+                                <div class="partner-header">Sócio ${index + 1}</div>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <div class="info-label">CPF/CNPJ</div>
+                                        <div class="info-value">${formatCPFCNPJ(partner.cpf_cnpj_socio)}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Nome</div>
+                                        <div class="info-value">${partner.nome}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Tipo</div>
+                                        <div class="info-value">${partner.tipo}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Data de Entrada</div>
+                                        <div class="info-value">${formatDate(partner.data_entrada)}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">CPF Representante Legal</div>
+                                        <div class="info-value">${partner.cpf_representante_legal ? formatCPF(partner.cpf_representante_legal) : 'Não informado'}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Nome Representante</div>
+                                        <div class="info-value">${partner.nome_representante || 'Não informado'}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Faixa Etária</div>
+                                        <div class="info-value">${partner.faixa_etaria}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">País ID</div>
+                                        <div class="info-value">${partner.pais_id}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Qualificação do Sócio</div>
+                                        <div class="info-value">${partner.qualificacao_socio.descricao}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Qualificação do Representante</div>
+                                        <div class="info-value">${partner.qualificacao_representante ? partner.qualificacao_representante.descricao : 'Não informado'}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">País</div>
+                                        <div class="info-value">${partner.pais.nome}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    partnersInfo.innerHTML = partnersHTML;
+                } else {
+                    partnersInfo.innerHTML = '<p>Não há informações de sócios disponíveis.</p>';
+                }
+                
+                const simplesInfo = document.getElementById('simplesInfo');
+                if (data.simples) {
+                    const isOptanteSimples = data.simples.simples === 'Sim';
+                    const isOptanteMei = data.simples.mei === 'Sim';
+
+                    simplesInfo.innerHTML = `
+                        <div class="info-item">
+                            <div class="info-label">Status Simples Nacional</div>
+                            <div class="info-value">
+                                <span class="badge ${isOptanteSimples ? 'badge-active' : 'badge-inactive'}">
+                                    ${isOptanteSimples ? 'OPTANTE' : 'NÃO OPTANTE'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Data de Opção pelo Simples</div>
+                            <div class="info-value">${formatDate(data.simples.data_opcao_simples) || 'Não informado'}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Data de Exclusão do Simples</div>
+                            <div class="info-value">${formatDate(data.simples.data_exclusao_simples) || 'Não informado'}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Status MEI</div>
+                            <div class="info-value">
+                                <span class="badge ${isOptanteMei ? 'badge-active' : 'badge-inactive'}">
+                                    ${isOptanteMei ? 'OPTANTE' : 'NÃO OPTANTE'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Data de Opção pelo MEI</div>
+                            <div class="info-value">${formatDate(data.simples.data_opcao_mei) || 'Não informado'}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Data de Exclusão do MEI</div>
+                            <div class="info-value">${formatDate(data.simples.data_exclusao_mei) || 'Não informado'}</div>
+                        </div>
+                    `;
+                } else {
+                    simplesInfo.innerHTML = `<div class="info-value">Não há informações sobre o Simples Nacional.</div>`;
+                }
+                
+                const stateRegistrationsInfo = document.getElementById('stateRegistrationsInfo');
+                if (estab.inscricoes_estaduais && estab.inscricoes_estaduais.length > 0) {
+                    let registrationsHTML = '<div class="info-grid">';
+                    estab.inscricoes_estaduais.forEach(reg => {
+                        registrationsHTML += `
+                            <div class="info-item">
+                                <div class="info-label">Inscrição Estadual</div>
+                                <div class="info-value">${reg.inscricao_estadual} 
+                                    <span class="badge ${reg.ativo ? 'badge-active' : 'badge-inactive'}">${reg.ativo ? 'Ativa' : 'Inativa'}</span>
+                                </div>
+                                <div class="info-label">Estado</div>
+                                <div class="info-value">${reg.estado.nome} (${reg.estado.sigla})</div>
+                                <div class="info-label">Regime</div>
+                                <div class="info-value">${reg.regime || 'Não informado'}</div>
+                            </div>
+                        `;
+                    });
+                    registrationsHTML += '</div>';
+                    stateRegistrationsInfo.innerHTML = registrationsHTML;
+                } else {
+                    stateRegistrationsInfo.innerHTML = '<p>Não há inscrições estaduais.</p>';
+                }
+                
+                const suframaInfo = document.getElementById('suframaInfo');
+                if (estab.inscricoes_suframa && estab.inscricoes_suframa.length > 0) {
+                    let suframaHTML = '<div class="info-grid">';
+                    estab.inscricoes_suframa.forEach(suf => {
+                        suframaHTML += `
+                            <div class="info-item">
+                                <div class="info-label">Inscrição Suframa</div>
+                                <div class="info-value">${suf.inscricao_suframa} 
+                                    <span class="badge ${suf.ativo ? 'badge-active' : 'badge-inactive'}">${suf.ativo ? 'Ativa' : 'Inativa'}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    suframaHTML += '</div>';
+                    suframaInfo.innerHTML = suframaHTML;
+                } else {
+                    suframaInfo.innerHTML = '<p>Não há inscrições Suframa.</p>';
+                }
+                
+                const taxRegimesInfo = document.getElementById('taxRegimesInfo');
+                if (estab.regimes_tributarios && estab.regimes_tributarios.length > 0) {
+                    let taxRegimesHTML = '<div class="info-grid">';
+                    estab.regimes_tributarios.forEach(regime => {
+                        taxRegimesHTML += `
+                            <div class="info-item">
+                                <div class="info-label">Ano</div>
+                                <div class="info-value">${regime.ano}</div>
+                                <div class="info-label">Forma de Tributação</div>
+                                <div class="info-value">${regime.forma_de_tributacao}</div>
+                            </div>
+                        `;
+                    });
+                    taxRegimesHTML += '</div>';
+                    taxRegimesInfo.innerHTML = taxRegimesHTML;
+                } else {
+                    taxRegimesInfo.innerHTML = '<p>Não há informações de regimes tributários disponíveis.</p>';
+                }
+
+                const motivoSituacao = estab.motivo_situacao_cadastral ? (estab.motivo_situacao_cadastral.descricao || estab.motivo_situacao_cadastral) : 'Não informado';
+                const statusBadgeClass = getStatusBadgeClass(estab.situacao_cadastral);
+            
+                document.getElementById('cadastralStatusInfo').innerHTML = `
+                    <div class="info-item">
+                        <div class="info-label">Situação Cadastral</div>
+                        <div class="info-value">
+                            <span class="badge ${statusBadgeClass}">${estab.situacao_cadastral}</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Data Situação Cadastral</div>
+                        <div class="info-value">${formatDate(estab.data_situacao_cadastral)}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Motivo Situação Cadastral</div>
+                        <div class="info-value">${motivoSituacao}</div>
+                    </div>
+                `;
+            }
+        
+            function showError(message) {
+                errorMessage.innerHTML = message;
+                errorMessage.style.display = 'block';
+            }
+        
+            function formatCNPJ(cnpj) {
+                if (!cnpj) return '';
+                cnpj = cnpj.replace(/\D/g, '');
+                return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+            }
+        
+            function formatCPF(cpf) {
+                if (!cpf) return '';
+                cpf = cpf.replace(/\D/g, '');
+                return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+            }
+        
+            function formatCPFCNPJ(doc) {
+                if (!doc) return '';
+                doc = doc.replace(/\D/g, '');
+                if (doc.length === 11) {
+                    return '***.' + doc.substring(3, 6) + '.***-**';
+                } else if (doc.length === 14) {
+                    return doc.substring(0, 2) + '.***.' + doc.substring(5, 8) + '/****-**';
+                }
+                return doc;
+            }
+        
+            function formatCEP(cep) {
+                if (!cep) return '';
+                cep = cep.replace(/\D/g, '');
+                return cep.replace(/(\d{5})(\d{3})/, '$1-$2');
+            }
+        
+            function formatCurrency(value) {
+                if (!value) return '0,00';
+                return parseFloat(value).toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+        
+            function formatDate(dateString) {
+                if (!dateString) return 'Não informado';
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) {
+                    return 'Data inválida';
+                }
+                return date.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+            }
+
+            function getStatusBadgeClass(status) {
+                if (!status) return '';
+                const upperStatus = status.toUpperCase();
+                if (upperStatus === 'ATIVA') {
+                    return 'badge-active';
+                } else if (upperStatus === 'BAIXADA') {
+                    return 'badge-inactive';
+                } else {
+                    return 'badge-warning';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
